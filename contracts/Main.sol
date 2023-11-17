@@ -75,4 +75,12 @@ contract main is IERC721Receiver{
         NATIVE.transferFrom(msg.sender, temp.publisher, temp.price);
         (temp.nftaddress).safeMint(msg.sender);
     }
+
+    function lib(address _userAddress, uint256 _gameID) external view returns(bool){
+        if((items[_gameID].nftaddress).balanceOf(msg.sender) > 0){
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
