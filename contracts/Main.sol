@@ -46,7 +46,6 @@ contract NFT is ERC721, Ownable {
 contract main{
     IERC20 immutable NATIVE;
     address immutable owner;
-    address immutable CCIP;
     mapping(address => bool) solvers;
     Item[] items;
 
@@ -60,11 +59,6 @@ contract main{
         _;
     }
 
-    modifier onlyCCIP {
-        require(msg.sender == CCIP);
-        _;
-    }
-
     struct Item {
         address publisher;
         uint256 price;
@@ -73,14 +67,13 @@ contract main{
         NFT nftaddress;
     }
 
-    constructor(IERC20 _native, address _CCIPaddress){
+    constructor(IERC20 _native){
         owner = msg.sender;
         NATIVE = _native;
-        CCIP = _CCIPaddress;
     }
 
-    function addItem(string memory _itemName, string memory _nftShortname, uint256 _price, uint256 _expirationTime) external returns(uint256 itemID) {
-        require(bytes(_itemName).length > 0 && bytes(_nftShortname).length > 0);
+    function addItem(string memory _itemName, uint256 _price, uint256 _expirationTime) external returns(uint256 itemID) {
+        require(bytes(_itemName).length > 0);
         NFT nftaddress = new NFT(_itemName, _expirationTime);
         Item memory newitem = Item(msg.sender, _price, 0, _itemName, nftaddress);
         items.push(newitem);
@@ -102,11 +95,11 @@ contract main{
         (items[_itemID].nftaddress).safeTransferFrom(_seller, _buyer, _tokenID);
     }
 
-    function buy(uint256 _gameID) external {
-        require(NATIVE.allowance(msg.sender, address(this)) >= items[_gameID].price);
-        require((items[_gameID].nftaddress).balanceOf(msg.sender) == 0);
+    function buy(uint256 _itemID) external {
+        require(NATIVE.allowance(msg.sender, address(this)) >= items[_itemID].price);
+        require((items[_itemID].nftaddress).balanceOf(msg.sender) == 0);
 
-        Item memory temp = items[_gameID];
+        Item memory temp = items[_itemID];
 
         NATIVE.transferFrom(msg.sender, temp.publisher, temp.price);
         (temp.nftaddress).safeMint(msg.sender);
@@ -120,7 +113,11 @@ contract main{
         }
     }
 
-    function CCIP_mint(address _buyer, uint256 _itemID) external onlyCCIP{
+    function getItemInfo(uint256 _itemID) external view returns(Item memory){
+        return items[_itemID];
+    }
+
+    function CCIP_mint(address _buyer, uint256 _itemID) external {
         (items[_itemID].nftaddress).safeMint(_buyer);
     }
 }
