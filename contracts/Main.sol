@@ -2,10 +2,25 @@
 
 pragma solidity >0.8.0;
 
-import "./ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract main is IERC721Receiver{
+contract NFT is ERC721, Ownable {
+    uint256 private _nextTokenId;
+
+    constructor(string memory _tokenName, string memory _shortName)
+        ERC721(_tokenName, _shortName)
+        Ownable(msg.sender)
+    {}
+
+    function safeMint(address to) public onlyOwner {
+        uint256 tokenId = _nextTokenId++;
+        _safeMint(to, tokenId);
+    }
+}
+
+contract main{
     IERC20 immutable NATIVE;
     address immutable owner;
     mapping(address => bool) solvers;
@@ -26,7 +41,7 @@ contract main is IERC721Receiver{
         uint256 price;
         uint256 sold;
         string itemName;
-        ERC721Con nftaddress;
+        NFT nftaddress;
     }
 
     constructor(IERC20 _native){
@@ -34,18 +49,9 @@ contract main is IERC721Receiver{
         NATIVE = _native;
     }
 
-    function onERC721Received(
-        address operator,
-        address from,
-        uint256 tokenId,
-        bytes calldata data
-    ) external returns (bytes4) {
-        return IERC721Receiver.onERC721Received.selector;
-    }
-
     function addItem(string memory _itemName, string memory _nftShortname, uint256 _price) external returns(uint256 itemID) {
         require(bytes(_itemName).length > 0 && bytes(_nftShortname).length > 0);
-        ERC721Con nftaddress = new ERC721Con(_itemName, _nftShortname);
+        NFT nftaddress = new NFT(_itemName, _nftShortname);
         Item memory newitem = Item(msg.sender, _price, 0, _itemName, nftaddress);
         items.push(newitem);
         return (items.length - 1);
@@ -66,7 +72,7 @@ contract main is IERC721Receiver{
         (items[_gameID].nftaddress).safeTransferFrom(_seller, _buyer, _tokenID);
     }
 
-    function buy(uint256 _gameID, uint256 _tokenID) external {
+    function buy(uint256 _gameID) external {
         require(NATIVE.allowance(msg.sender, address(this)) >= items[_gameID].price);
         require((items[_gameID].nftaddress).balanceOf(msg.sender) == 0);
 
@@ -77,7 +83,7 @@ contract main is IERC721Receiver{
     }
 
     function lib(address _userAddress, uint256 _gameID) external view returns(bool){
-        if((items[_gameID].nftaddress).balanceOf(msg.sender) > 0){
+        if((items[_gameID].nftaddress).balanceOf(_userAddress) > 0){
             return true;
         } else {
             return false;
