@@ -9,8 +9,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract NFT is ERC721, Ownable {
     uint256 private _nextTokenId;
 
-    constructor(string memory _tokenName, string memory _shortName)
-        ERC721(_tokenName, _shortName)
+    constructor(string memory _tokenName)
+        ERC721(_tokenName, "PRV")
         Ownable(msg.sender)
     {}
 
