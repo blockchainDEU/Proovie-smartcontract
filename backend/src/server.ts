@@ -21,7 +21,7 @@ interface DecodedItem {
 
 fastify.get<{ Params: AttestationDataParams }>(
   '/eas/:easID/:offerType',
-  async function (req, res) {
+  async function (req : any, res: any) {
     const { easID, offerType } = req.params;
     if (easID && offerType) {
       try {
@@ -121,7 +121,7 @@ fastify.get<{ Params: AttestationDataParams }>(
 
 fastify.post<{ Body: GameCreateParams }>(
   '/game/createGame',
-  async function (req, res) {
+  async function (req : any, res: any) {
     const { name, releaseDate, price, itemImage } = req.body;
     const game = await prisma.game.create({
       data: {
@@ -135,7 +135,7 @@ fastify.post<{ Body: GameCreateParams }>(
   }
 );
 
-fastify.get('/game/getAll', async function (req, res) {
+fastify.get('/game/getAll', async function (req : any, res: any) {
   try {
     const games = await prisma.game.findMany();
     res.status(200).send(games);
@@ -148,7 +148,7 @@ fastify.listen(
   {
     port: 3000,
   },
-  function (err, address) {
+  function (err : any, address : string) {
     if (err) {
       fastify.log.error(err);
       process.exit(1);
