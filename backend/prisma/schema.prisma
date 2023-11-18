@@ -1,0 +1,38 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OfferType {
+  BUY
+  SELL
+}
+
+model Offer {
+  id             Int       @id @default(autoincrement())
+  createdAt      DateTime  @default(now())
+  offerUser      String    @db.VarChar(255)
+  offerGame      Int
+  offerPrice     Int
+  paymentChainID Int
+  itemChainID    Int
+  offerType      OfferType
+  status         Boolean
+  game           Game      @relation(fields: [offerGame], references: [id])
+}
+
+model Game {
+  id          Int     @id @default(autoincrement())
+  name        String
+  releaseDate String
+  price       Int
+  itemImage   String
+  offers      Offer[]
+}
