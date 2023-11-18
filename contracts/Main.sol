@@ -95,11 +95,11 @@ contract main{
         solvers[_address] = false;
     }
 
-    function solverApproval(address _seller, address _buyer, uint256 _price, uint256 _gameID, uint256 _tokenID) external onlySolver{
+    function solverApproval(address _seller, address _buyer, uint256 _price, uint256 _itemID, uint256 _tokenID) external onlySolver{
         require(NATIVE.allowance(_buyer, address(this)) >= _price);
         
         NATIVE.transferFrom(_buyer, _seller, _price);
-        (items[_gameID].nftaddress).safeTransferFrom(_seller, _buyer, _tokenID);
+        (items[_itemID].nftaddress).safeTransferFrom(_seller, _buyer, _tokenID);
     }
 
     function buy(uint256 _gameID) external {
